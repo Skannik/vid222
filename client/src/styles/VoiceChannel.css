@@ -1,0 +1,221 @@
+.voice-channel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: #2f3136;
+  padding: 16px;
+}
+
+.voice-channel.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.join-button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  background-color: #4f545c;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.join-button:hover {
+  background-color: #5865f2;
+}
+
+.join-button img {
+  width: 24px;
+  height: 24px;
+}
+
+.participants-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  padding: 16px;
+}
+
+.participant {
+  background-color: #36393f;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  aspect-ratio: 16/9;
+}
+
+.participant.local {
+  border: 2px solid #5865f2;
+}
+
+.participant.speaking {
+  border: 2px solid #43b581;
+}
+
+.video-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background-color: #202225;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.video-container video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.video-container video.hidden {
+  display: none;
+}
+
+.video-container .avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: #36393f;
+}
+
+.participant-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.username {
+  font-size: 14px;
+  font-weight: 500;
+  color: white;
+}
+
+.status-indicators {
+  display: flex;
+  gap: 8px;
+}
+
+.status-icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  padding: 4px;
+}
+
+.status-icon img {
+  width: 16px;
+  height: 16px;
+}
+
+.controls {
+  display: flex;
+  gap: 8px;
+}
+
+.control-button {
+  background: none;
+  border: none;
+  padding: 6px;
+  cursor: pointer;
+  opacity: 1;
+  transition: all 0.2s;
+  border-radius: 50%;
+  background-color: rgba(79, 84, 92, 0.3);
+}
+
+.control-button:hover {
+  background-color: rgba(79, 84, 92, 0.6);
+}
+
+/* Стили для активных состояний (когда выключены) */
+.control-button[data-active="true"] {
+  background-color: rgba(237, 66, 69, 0.1);
+}
+
+.control-button[data-active="true"]:hover {
+  background-color: rgba(237, 66, 69, 0.2);
+}
+
+.control-button[data-active="true"] .control-icon {
+  filter: invert(36%) sepia(95%) saturate(7481%) hue-rotate(356deg) brightness(97%) contrast(93%);
+}
+
+/* Стили для кнопки выхода */
+.control-button.leave-button {
+  background-color: rgba(237, 66, 69, 0.1);
+}
+
+.control-button.leave-button:hover {
+  background-color: rgba(237, 66, 69, 0.2);
+}
+
+.control-button.leave-button .control-icon {
+  filter: invert(36%) sepia(95%) saturate(7481%) hue-rotate(356deg) brightness(97%) contrast(93%);
+}
+
+.control-icon {
+  width: 20px;
+  height: 20px;
+  filter: invert(1);
+}
+
+.error-message {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #ed4245;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.connecting-message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 4px;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.connecting-message::after {
+  content: '';
+  width: 16px;
+  height: 16px;
+  border: 2px solid #ffffff;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
