@@ -7,6 +7,28 @@ const { db } = require('../database');
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secure-secret-key';
 
+// Middleware to verify token
+const verifyToken = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).json({ message: 'No token provided' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  if (!token) {
+    return res.status(401).json({ message: 'Invalid token format' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (error) {
+    console.error('Token verification failed:', error);
+    return res.status(403).json({ message: 'Invalid token' });
+  }
+};
+
 // Register a new user
 router.post('/register', async (req, res) => {
   const { username, email, password } = req.body;
@@ -33,8 +55,8 @@ router.post('/register', async (req, res) => {
       
       // Insert new user
       db.run(
-        'INSERT INTO users (id, username, email, password) VALUES (?, ?, ?, ?)',
-        [userId, username, email, hashedPassword],
+        'INSERT INTO users (id, username, email, password, status) VALUES (?, ?, ?, ?, ?)',
+        [userId, username, email, hashedPassword, 'online'],
         (err) => {
           if (err) {
             console.error('Error creating user:', err);
@@ -50,7 +72,7 @@ router.post('/register', async (req, res) => {
           
           res.status(201).json({
             message: 'User created successfully',
-            user: { id: userId, username, email },
+            user: { id: userId, username, email, status: 'online' },
             token
           });
         }
@@ -63,7 +85,7 @@ router.post('/register', async (req, res) => {
 });
 
 // Login user
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
   const { email, password } = req.body;
   
   if (!email || !password) {
@@ -74,6 +96,7 @@ router.post('/login', (req, res) => {
     // Find user by email
     db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
       if (err) {
+        console.error('Database error during login:', err);
         return res.status(500).json({ message: 'Database error', error: err.message });
       }
       
@@ -104,66 +127,44 @@ router.post('/login', (req, res) => {
           id: user.id,
           username: user.username,
           email: user.email,
-          avatar: user.avatar,
           status: 'online'
         },
         token
       });
     });
   } catch (error) {
+    console.error('Server error during login:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 
 // Get current user profile
-router.get('/profile', (req, res) => {
-  const token = req.headers.authorization?.split(' ')[1];
-  
-  if (!token) {
-    return res.status(401).json({ message: 'Authentication required' });
-  }
-  
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+router.get('/profile', verifyToken, (req, res) => {
+  db.get('SELECT id, username, email, status FROM users WHERE id = ?', [req.user.id], (err, user) => {
+    if (err) {
+      console.error('Database error fetching profile:', err);
+      return res.status(500).json({ message: 'Database error', error: err.message });
+    }
     
-    db.get('SELECT id, username, email, avatar, status FROM users WHERE id = ?', [decoded.id], (err, user) => {
-      if (err) {
-        return res.status(500).json({ message: 'Database error', error: err.message });
-      }
-      
-      if (!user) {
-        return res.status(404).json({ message: 'User not found' });
-      }
-      
-      res.json({ user });
-    });
-  } catch (error) {
-    res.status(403).json({ message: 'Invalid token', error: error.message });
-  }
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    res.json({ user });
+  });
 });
 
 // Logout
-router.post('/logout', (req, res) => {
-  const token = req.headers.authorization?.split(' ')[1];
-  
-  if (!token) {
-    return res.status(401).json({ message: 'Authentication required' });
-  }
-  
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+router.post('/logout', verifyToken, (req, res) => {
+  // Update user status to offline
+  db.run('UPDATE users SET status = ? WHERE id = ?', ['offline', req.user.id], (err) => {
+    if (err) {
+      console.error('Database error during logout:', err);
+      return res.status(500).json({ message: 'Database error', error: err.message });
+    }
     
-    // Update user status to offline
-    db.run('UPDATE users SET status = ? WHERE id = ?', ['offline', decoded.id], (err) => {
-      if (err) {
-        return res.status(500).json({ message: 'Database error', error: err.message });
-      }
-      
-      res.json({ message: 'Logged out successfully' });
-    });
-  } catch (error) {
-    res.status(403).json({ message: 'Invalid token', error: error.message });
-  }
+    res.json({ message: 'Logged out successfully' });
+  });
 });
 
 module.exports = router;
