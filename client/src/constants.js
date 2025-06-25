@@ -1,3 +1,6 @@
+// API URL
+export const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
 export const SOCKET_EVENTS = {
   JOIN_VOICE: 'join-voice',
   LEAVE_VOICE: 'leave-voice',

@@ -1,5 +1,7 @@
+import { API_URL } from '../constants';
+
 // Base URL for API requests
-const BASE_URL = 'http://localhost:5000/api';
+const BASE_URL = `${API_URL}/api`;
 
 // Helper for making API requests with fetch
 const api = {
