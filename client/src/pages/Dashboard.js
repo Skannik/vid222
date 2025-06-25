@@ -15,6 +15,7 @@ import DirectMessages from '../components/DirectMessages';
 import VoiceChannel from '../components/VoiceChannel';
 
 import '../styles/Dashboard.css';
+import { API_URL } from '../constants';
 
 const Dashboard = () => {
   const { serverId, channelId, userId } = useParams();
@@ -112,7 +113,7 @@ const Dashboard = () => {
         const fetchUser = async () => {
           try {
             // Fetch user from API
-            const response = await fetch(`http://localhost:5000/api/users/${userId}`, {
+            const response = await fetch(`${API_URL}/api/users/${userId}`, {
               headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
             

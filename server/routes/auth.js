@@ -167,4 +167,7 @@ router.post('/logout', verifyToken, (req, res) => {
   });
 });
 
-module.exports = router;
+module.exports = {
+  router,
+  verifyToken
+};

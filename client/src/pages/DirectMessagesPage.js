@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useChat } from '../contexts/ChatContext';
+import { API_URL } from '../constants';
 
 import ServerList from '../components/ServerList';
 import Sidebar from '../components/Sidebar';
@@ -28,7 +29,7 @@ const DirectMessagesPage = () => {
       const fetchUser = async () => {
         try {
           // Fetch user from API
-          const response = await fetch(`http://localhost:5000/api/users/${userId}`, {
+          const response = await fetch(`${API_URL}/api/users/${userId}`, {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
           });
           
