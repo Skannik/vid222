@@ -9,7 +9,14 @@ if (!fs.existsSync(dbDir)){
 }
 
 const dbPath = path.join(dbDir, 'vidtalk.db');
-const db = new sqlite3.Database(dbPath);
+const db = new sqlite3.Database(dbPath, (err) => {
+  if (err) {
+    console.error('Error connecting to database:', err);
+  } else {
+    console.log('Connected to database');
+    initializeDatabase();
+  }
+});
 
 function initializeDatabase() {
   console.log('Initializing database...');

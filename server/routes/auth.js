@@ -5,6 +5,7 @@ const { v4: uuidv4 } = require('uuid');
 const { db } = require('../database');
 
 const router = express.Router();
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secure-secret-key';
 
 // Register a new user
 router.post('/register', async (req, res) => {
@@ -18,6 +19,7 @@ router.post('/register', async (req, res) => {
     // Check if user already exists
     db.get('SELECT * FROM users WHERE username = ? OR email = ?', [username, email], async (err, user) => {
       if (err) {
+        console.error('Database error during registration:', err);
         return res.status(500).json({ message: 'Database error', error: err.message });
       }
       
@@ -35,13 +37,14 @@ router.post('/register', async (req, res) => {
         [userId, username, email, hashedPassword],
         (err) => {
           if (err) {
+            console.error('Error creating user:', err);
             return res.status(500).json({ message: 'Error creating user', error: err.message });
           }
           
           // Generate JWT token
           const token = jwt.sign(
             { id: userId, username },
-            'YOUR_SECRET_KEY', // Replace with actual secret in production
+            JWT_SECRET,
             { expiresIn: '7d' }
           );
           
@@ -54,6 +57,7 @@ router.post('/register', async (req, res) => {
       );
     });
   } catch (error) {
+    console.error('Server error during registration:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
@@ -90,7 +94,7 @@ router.post('/login', (req, res) => {
       // Generate JWT token
       const token = jwt.sign(
         { id: user.id, username: user.username },
-        'YOUR_SECRET_KEY', // Replace with actual secret in production
+        JWT_SECRET,
         { expiresIn: '7d' }
       );
       
@@ -120,7 +124,7 @@ router.get('/profile', (req, res) => {
   }
   
   try {
-    const decoded = jwt.verify(token, 'YOUR_SECRET_KEY'); // Replace with actual secret
+    const decoded = jwt.verify(token, JWT_SECRET);
     
     db.get('SELECT id, username, email, avatar, status FROM users WHERE id = ?', [decoded.id], (err, user) => {
       if (err) {
@@ -147,7 +151,7 @@ router.post('/logout', (req, res) => {
   }
   
   try {
-    const decoded = jwt.verify(token, 'YOUR_SECRET_KEY'); // Replace with actual secret
+    const decoded = jwt.verify(token, JWT_SECRET);
     
     // Update user status to offline
     db.run('UPDATE users SET status = ? WHERE id = ?', ['offline', decoded.id], (err) => {
