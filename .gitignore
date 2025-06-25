@@ -49,3 +49,6 @@ Thumbs.db
 *.tmp
 *.temp
 *.bak
+
+# Keep config-overrides.js
+!client/config-overrides.js

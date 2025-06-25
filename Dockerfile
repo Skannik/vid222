@@ -9,6 +9,9 @@ COPY package*.json ./
 COPY client/package*.json ./client/
 COPY server/package*.json ./server/
 
+# Copy config-overrides.js first
+COPY client/config-overrides.js ./client/
+
 # Install dependencies
 RUN npm install
 WORKDIR /app/client
