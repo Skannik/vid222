@@ -1,50 +1,24 @@
-# Build stage
-FROM node:18-alpine AS builder
+FROM node:18
 
-# Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-COPY client/package*.json ./client/
-COPY server/package*.json ./server/
-
-# Copy config-overrides.js first
-COPY client/config-overrides.js ./client/
-
-# Install dependencies
-RUN npm install
-WORKDIR /app/client
-RUN npm install
-WORKDIR /app/server
-RUN npm install
-WORKDIR /app
-
-# Copy source code
+# Сначала копируем весь проект
 COPY . .
 
-# Build client
+# Устанавливаем зависимости клиента и билдим клиент
 WORKDIR /app/client
+RUN npm install
 RUN npm run build
 
-# Production stage
-FROM node:18-alpine
+# Устанавливаем зависимости сервера
+WORKDIR /app/server
+RUN npm install
 
-WORKDIR /app
-
-# Copy built client and server
-COPY --from=builder /app/server ./server
-COPY --from=builder /app/client/build ./server/build
-
-# Set environment variables
-ENV NODE_ENV=production
-ENV PORT=5000
-ENV SOCKET_PORT=8080
-ENV CLIENT_URL=http://localhost:3000
+# Копируем build клиента в сервер (на всякий случай)
+RUN rm -rf /app/server/build && cp -r /app/client/build /app/server/build
 
 WORKDIR /app/server
 
-EXPOSE $PORT
-EXPOSE $SOCKET_PORT
+EXPOSE 8080
 
 CMD ["npm", "run", "start"]

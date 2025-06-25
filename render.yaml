@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: vidtalk-server
+    env: node
+    buildCommand: cd server && npm install
+    startCommand: cd server && node index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 8080
+
+  - type: web
+    name: vidtalk-client
+    env: static
+    buildCommand: cd client && npm install && npm run build
+    staticPublishPath: ./client/build
+    envVars:
+      - key: REACT_APP_API_URL
+        fromService:
+          type: web
+          name: vidtalk-server
+          envVarKey: RENDER_EXTERNAL_URL 

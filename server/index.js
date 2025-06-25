@@ -12,14 +12,17 @@ const messageRoutes = require('./routes/messages');
 const userRoutes = require('./routes/users');
 const directMessageRoutes = require('./routes/directMessages');
 const socketHandlers = require('./socketHandlers');
-const path = require('path');
+require('dotenv').config();
 
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: process.env.CLIENT_URL || "*",
-    methods: ["GET", "POST"]
+    origin: process.env.NODE_ENV === 'production' 
+      ? process.env.CLIENT_URL 
+      : 'http://localhost:3000',
+    methods: ['GET', 'POST'],
+    credentials: true
   }
 });
 
@@ -28,9 +31,10 @@ initializeDatabase();
 
 // Middleware
 app.use(cors({
-  origin: process.env.CLIENT_URL || "*",
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  origin: process.env.NODE_ENV === 'production' 
+    ? process.env.CLIENT_URL 
+    : 'http://localhost:3000',
+  credentials: true
 }));
 app.use(express.json());
 
@@ -38,11 +42,6 @@ app.use(express.json());
 app.use((req, res, next) => {
   req.io = io;
   next();
-});
-
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.status(200).json({ status: 'healthy', timestamp: new Date().toISOString() });
 });
 
 // JWT middleware
@@ -54,7 +53,7 @@ const authenticateJWT = (req, res, next) => {
   }
   
   try {
-    const user = jwt.verify(token, process.env.JWT_SECRET || 'YOUR_SECRET_KEY');
+    const user = jwt.verify(token, 'YOUR_SECRET_KEY'); // Replace with actual secret in production
     req.user = user;
     next();
   } catch (error) {
@@ -70,34 +69,11 @@ app.use('/api/messages', authenticateJWT, messageRoutes);
 app.use('/api/users', authenticateJWT, userRoutes);
 app.use('/api/direct-messages', authenticateJWT, directMessageRoutes);
 
-// Serve static files in production
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static('build'));
-  app.get('*', (req, res) => {
-    res.sendFile(path.resolve(__dirname, 'build', 'index.html'));
-  });
-}
-
 // Socket.io handling
 socketHandlers(io);
 
-const PORT = process.env.PORT || 5000;
-const SOCKET_PORT = process.env.SOCKET_PORT || 8080;
+const PORT = process.env.PORT || 8080;
 
-// Start the main server
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-});
-
-// Create and start WebSocket server on a separate port
-const socketServer = http.createServer();
-const socketIO = socketIo(socketServer, {
-  cors: {
-    origin: process.env.CLIENT_URL || "*",
-    methods: ["GET", "POST"]
-  }
-});
-
-socketServer.listen(SOCKET_PORT, () => {
-  console.log(`WebSocket server running on port ${SOCKET_PORT}`);
 });

@@ -1,31 +1,24 @@
 {
   "name": "vidtalk",
   "version": "1.0.0",
-  "description": "Video chat application with Discord-like interface",
-  "main": "server/index.js",
+  "description": "Vidtalk with local functionality",
+  "main": "index.js",
   "scripts": {
-    "start": "node server/index.js",
-    "build": "cd client && npm install && npm run build",
-    "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "server": "nodemon server/index.js",
+    "start": "node index.js",
     "client": "cd client && npm start",
-    "install": "cd client && npm install && cd ../server && npm install",
-    "test": "cd client && npm test",
-    "postinstall": "npm run build"
+    "server": "cd server && npm run dev",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "install-deps": "npm install && cd server && npm install && cd ../client && npm install",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
-    "video-chat",
+    "chat",
     "webrtc",
-    "react",
-    "nodejs"
+    "socket.io"
   ],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "concurrently": "^8.0.1",
-    "nodemon": "^2.0.22"
-  },
-  "engines": {
-    "node": ">=18.0.0"
+    "concurrently": "^8.0.1"
   }
 }
